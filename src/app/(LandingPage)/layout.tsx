@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "The Landing Page",
-  description: "This is the landingPage for this application",
+  title: "Student Portal",
+  description: "YoüngTëch Student Portal",
 };
 
 export default function LandingPageLayout({
