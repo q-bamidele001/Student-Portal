@@ -219,7 +219,7 @@ const AddStudentPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/50"
+              className="px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/20"
             >
               {loading ? "Saving..." : "Save Student"}
             </button>

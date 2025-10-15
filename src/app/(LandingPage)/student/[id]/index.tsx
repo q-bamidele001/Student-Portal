@@ -128,15 +128,15 @@ const StudentDetailPage = () => {
           <div className="flex gap-3 mt-8">
             <Link
               href={`/student/${id}/edit`}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-center font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/50"
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg text-center font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/20"
             >
-              ✏️ Edit Student
+              ✏️ Edit
             </Link>
             <button
               onClick={handleDelete}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-red-500/50"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-red-500/20"
             >
-              🗑️ Delete Student
+              🗑️ Delete
             </button>
           </div>
         </div>
