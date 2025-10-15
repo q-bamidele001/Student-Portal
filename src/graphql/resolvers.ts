@@ -1,5 +1,5 @@
-import { Student } from "@/models/Student";
-import { Department } from "@/models/Department";
+import { Student, IStudent } from "@/models/Student";
+import { Department, IDepartment } from "@/models/Department";
 import dbConnect from "@/lib/mongoose";
 import mongoose from "mongoose";
 
@@ -19,29 +19,29 @@ interface DepartmentInput {
 
 export const resolvers = {
   Query: {
-    students: async (): Promise<any[]> => {
+    students: async (): Promise<IStudent[]> => {
       await dbConnect();
       return Student.find().populate("department");
     },
 
-    student: async (_: any, { id }: { id: string }): Promise<any> => {
+    student: async (_: unknown, { id }: { id: string }): Promise<IStudent | null> => {
       await dbConnect();
       return Student.findById(id).populate("department");
     },
 
-    departments: async (): Promise<any[]> => {
+    departments: async (): Promise<IDepartment[]> => {
       await dbConnect();
       return Department.find();
     },
 
-    department: async (_: any, { id }: { id: string }): Promise<any> => {
+    department: async (_: unknown, { id }: { id: string }): Promise<IDepartment | null> => {
       await dbConnect();
       return Department.findById(id);
     },
   },
 
   Mutation: {
-    addStudent: async (_: any, { input }: { input: StudentInput }): Promise<any> => {
+    addStudent: async (_: unknown, { input }: { input: StudentInput }): Promise<IStudent> => {
       await dbConnect();
 
       if (input.matricNo) {
@@ -78,7 +78,7 @@ export const resolvers = {
       return student.populate("department");
     },
 
-    updateStudent: async (_: any, { id, input }: { id: string; input: StudentInput }): Promise<any> => {
+    updateStudent: async (_: unknown, { id, input }: { id: string; input: StudentInput }): Promise<IStudent | null> => {
       await dbConnect();
 
       if (input.matricNo) {
@@ -119,16 +119,16 @@ export const resolvers = {
         { new: true }
       );
 
-      return student?.populate("department");
+      return student?.populate("department") || null;
     },
 
-    deleteStudent: async (_: any, { id }: { id: string }): Promise<boolean> => {
+    deleteStudent: async (_: unknown, { id }: { id: string }): Promise<boolean> => {
       await dbConnect();
       const result = await Student.findByIdAndDelete(id);
       return !!result;
     },
 
-    addDepartment: async (_: any, { input }: { input: DepartmentInput }): Promise<any> => {
+    addDepartment: async (_: unknown, { input }: { input: DepartmentInput }): Promise<IDepartment> => {
       await dbConnect();
       
       const existing = await Department.findOne({ name: input.name });
@@ -144,7 +144,7 @@ export const resolvers = {
       return department;
     },
 
-    updateDepartment: async (_: any, { id, input }: { id: string; input: DepartmentInput }): Promise<any> => {
+    updateDepartment: async (_: unknown, { id, input }: { id: string; input: DepartmentInput }): Promise<IDepartment> => {
       await dbConnect();
       
       const existing = await Department.findOne({
@@ -171,7 +171,7 @@ export const resolvers = {
       return department;
     },
 
-    deleteDepartment: async (_: any, { id }: { id: string }): Promise<boolean> => {
+    deleteDepartment: async (_: unknown, { id }: { id: string }): Promise<boolean> => {
       await dbConnect();
 
       await Student.updateMany({ department: id }, { $unset: { department: "" } });
