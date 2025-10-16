@@ -4,6 +4,7 @@ import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
+import { motion } from "framer-motion";
 import { Department, Student } from "@/types";
 
 const STUDENT_QUERY = gql`
@@ -133,8 +134,18 @@ const EditStudentPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="w-full max-w-2xl bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-2xl bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700"
+      >
         <h1 className="text-center text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           ✏️ Edit Student
         </h1>
@@ -235,12 +246,16 @@ const EditStudentPage = () => {
           </div>
 
           {customError && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-3 rounded-lg text-sm font-medium"
+            >
               {customError}
-            </div>
+            </motion.div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-center gap-3 pt-4">
             <button
               type="button"
               onClick={() => router.back()}
@@ -251,14 +266,14 @@ const EditStudentPage = () => {
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/50"
+              className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
             >
-              {saving ? "Updating..." : "Update Student"}
+              {saving ? "Updating..." : "Update"}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

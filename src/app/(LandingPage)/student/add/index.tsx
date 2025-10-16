@@ -1,11 +1,12 @@
-// src/app/(LandingPage)/student/add/page.tsx
 "use client";
 
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useRouter } from "next/navigation";
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Department } from "@/types";
+import { motion } from "framer-motion";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
 
 const GET_DEPARTMENTS = gql`
   query Departments {
@@ -51,6 +52,7 @@ const AddStudentPage = () => {
     departmentId: "",
   });
   const [error, setError] = useState<string>("");
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
 
   const { data: depData, loading: depLoading } = useQuery<{ departments: Department[] }>(
     GET_DEPARTMENTS
@@ -60,6 +62,23 @@ const AddStudentPage = () => {
     onCompleted: () => router.push("/"),
     onError: (err) => setError(err.message),
   });
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle("dark", savedTheme === "dark");
+    } else {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    localStorage.setItem("theme", newTheme);
+  };
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -95,94 +114,116 @@ const AddStudentPage = () => {
         },
       });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="w-full max-w-2xl bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700">
-        <h1 className="text-center text-3xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
-          ✨ Add New Student
-        </h1>
+    <div
+      className={`min-h-screen flex items-center justify-center p-6 transition-colors duration-500 ${
+        theme === "dark"
+          ? "bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-gray-100"
+          : "bg-gray-50 text-gray-800"
+      }`}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className={`w-full max-w-2xl rounded-2xl shadow-xl p-8 border backdrop-blur-md ${
+          theme === "dark"
+            ? "bg-gray-900/70 border-gray-800"
+            : "bg-white/80 border-gray-200"
+        }`}
+      >
+        {/* HEADER */}
+        <div className="flex justify-between items-center mb-8">
+          <h1
+            className={`text-3xl font-bold bg-clip-text text-transparent ${
+              theme === "dark"
+                ? "bg-gradient-to-r from-emerald-400 to-blue-500"
+                : "bg-gradient-to-r from-emerald-600 to-blue-700"
+            }`}
+          >
+            ✨ Add New Student
+          </h1>
 
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full hover:scale-110 transition-transform"
+            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {theme === "dark" ? (
+              <SunIcon className="w-6 h-6 text-yellow-400" />
+            ) : (
+              <MoonIcon className="w-6 h-6 text-blue-600" />
+            )}
+          </button>
+        </div>
+
+        {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                First Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                name="firstName"
-                type="text"
-                placeholder="John"
-                value={form.firstName}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Last Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                name="lastName"
-                type="text"
-                placeholder="Doe"
-                value={form.lastName}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Matric Number</label>
-            <input
-              name="matricNo"
-              type="text"
-              placeholder="CS/2024/001"
-              value={form.matricNo}
-              onChange={handleChange}
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="john.doe@example.com"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              GPA (0-5) <span className="text-red-400">*</span>
-            </label>
-            <input
-              name="gpa"
-              type="number"
-              step="0.01"
-              min="0"
-              max="5"
-              placeholder="4.50"
-              value={form.gpa}
-              onChange={handleChange}
+            <InputField
+              label="First Name"
+              name="firstName"
+              placeholder="John"
               required
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200"
+              value={form.firstName}
+              onChange={handleChange}
+              theme={theme}
+            />
+            <InputField
+              label="Last Name"
+              name="lastName"
+              placeholder="Doe"
+              required
+              value={form.lastName}
+              onChange={handleChange}
+              theme={theme}
             />
           </div>
 
+          <InputField
+            label="Matric Number"
+            name="matricNo"
+            placeholder="CS/2024/001"
+            value={form.matricNo}
+            onChange={handleChange}
+            theme={theme}
+          />
+
+          <InputField
+            label="Email"
+            name="email"
+            placeholder="john.doe@example.com"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            theme={theme}
+          />
+
+          <InputField
+            label="GPA (0–5)"
+            name="gpa"
+            placeholder="4.50"
+            type="number"
+            min="0"
+            max="5"
+            step="0.01"
+            required
+            value={form.gpa}
+            onChange={handleChange}
+            theme={theme}
+          />
+
+          {/* DEPARTMENT SELECT */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               Department <span className="text-red-400">*</span>
             </label>
             <select
@@ -191,7 +232,11 @@ const AddStudentPage = () => {
               onChange={handleChange}
               required
               disabled={depLoading || !depData?.departments.length}
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-900/70 text-gray-100"
+                  : "border-gray-300 bg-white text-gray-800"
+              }`}
             >
               <option value="">Select Department</option>
               {depData?.departments.map((dept) => (
@@ -203,31 +248,85 @@ const AddStudentPage = () => {
           </div>
 
           {error && (
-            <div className="bg-red-900/30 border border-red-800 text-red-400 px-4 py-3 rounded-lg text-sm font-medium">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`px-4 py-3 rounded-lg text-sm font-medium border ${
+                theme === "dark"
+                  ? "bg-red-900/30 border-red-800 text-red-400"
+                  : "bg-red-100 border-red-300 text-red-700"
+              }`}
+            >
               {error}
-            </div>
+            </motion.div>
           )}
 
           <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-100 transition-all duration-200 hover:scale-105 font-medium"
+              className={`px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 ${
+                theme === "dark"
+                  ? "bg-gray-700 hover:bg-gray-600 text-gray-100"
+                  : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+              }`}
             >
               Cancel
             </button>
+
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-500/20"
+              className={`px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed ${
+                theme === "dark"
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
+              }`}
             >
               {loading ? "Saving..." : "Save Student"}
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };
+
+// REUSABLE INPUT FIELD COMPONENT
+const InputField = ({
+  label,
+  name,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  required = false,
+  theme,
+  ...props
+}: any) => (
+  <div>
+    <label
+      className={`block text-sm font-medium mb-2 ${
+        theme === "dark" ? "text-gray-300" : "text-gray-700"
+      }`}
+    >
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <input
+      name={name}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      required={required}
+      className={`w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-emerald-500 transition-all ${
+        theme === "dark"
+          ? "border-gray-700 bg-gray-900/70 text-gray-100 placeholder-gray-400"
+          : "border-gray-300 bg-white text-gray-800 placeholder-gray-500"
+      }`}
+      {...props}
+    />
+  </div>
+);
 
 export default AddStudentPage;

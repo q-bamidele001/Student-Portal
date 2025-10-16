@@ -4,6 +4,7 @@ import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Department, Student } from "@/types";
 
 const STUDENT_QUERY = gql`
@@ -34,11 +35,15 @@ const StudentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
 
   const { data, loading } = useQuery<{ student: Student }>(STUDENT_QUERY, { variables: { id } });
-  const [deleteStudent] = useMutation(DELETE_STUDENT, { onCompleted: () => router.push("/") });
+  const [deleteStudent] = useMutation(DELETE_STUDENT, {
+    onCompleted: () => router.push("/"),
+    onError: (err) => alert(`Error deleting student: ${err.message}`),
+  });
 
-  const handleDelete = (): void => {
-    if (confirm("Are you sure you want to delete this student?")) {
-      deleteStudent({ variables: { id } });
+  const handleDelete = async (): Promise<void> => {
+    const confirmed = confirm("Are you sure you want to delete this student?");
+    if (confirmed) {
+      await deleteStudent({ variables: { id } });
     }
   };
 
@@ -80,9 +85,19 @@ const StudentDetailPage = () => {
   const student = data.student;
 
   return (
-    <div className="min-h-screen p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+    <motion.div
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="min-h-screen p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100"
+    >
       <div className="max-w-3xl mx-auto">
-        <div className="bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700"
+        >
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
               Student Details
@@ -95,7 +110,9 @@ const StudentDetailPage = () => {
           <div className="space-y-6">
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
               <label className="text-gray-400 text-sm font-medium block mb-2">Full Name</label>
-              <p className="text-2xl font-semibold">{student.firstName} {student.lastName}</p>
+              <p className="text-2xl font-semibold">
+                {student.firstName} {student.lastName}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,7 +134,11 @@ const StudentDetailPage = () => {
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
               <label className="text-gray-400 text-sm font-medium block mb-2">GPA</label>
               <div className="flex items-center gap-4">
-                <span className={`${getGpaColor(student.gpa)} px-4 py-2 rounded-full font-bold text-black text-xl`}>
+                <span
+                  className={`${getGpaColor(
+                    student.gpa
+                  )} px-4 py-2 rounded-full font-bold text-black text-xl`}
+                >
                   {student.gpa.toFixed(2)}
                 </span>
                 <span className="text-gray-300 font-medium">{getGpaLabel(student.gpa)}</span>
@@ -125,7 +146,7 @@ const StudentDetailPage = () => {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8">
+          <div className="flex flex-col md:flex-row gap-3 mt-8">
             <Link
               href={`/student/${id}/edit`}
               className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg text-center font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-blue-500/20"
@@ -134,14 +155,14 @@ const StudentDetailPage = () => {
             </Link>
             <button
               onClick={handleDelete}
-              className="flex-1 bg-red-500 hover:bg-red-600 text-white text-center py-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-red-500/20"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white py-4 rounded-lg font-medium transition-all duration-200 hover:scale-105 shadow-lg shadow-red-500/20"
             >
               🗑️ Delete
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

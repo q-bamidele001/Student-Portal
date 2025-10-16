@@ -117,7 +117,7 @@ const DepartmentsPage = () => {
             Departments
           </h1>
           <Link href="/" className="bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg transition-all duration-200 hover:scale-105 font-medium">
-            ← Back to Dashboard
+            ← Back
           </Link>
         </div>
 
