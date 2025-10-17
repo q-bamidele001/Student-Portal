@@ -4,7 +4,7 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function SignUpPage() {
+const SignUpPage = () => {
   const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
@@ -24,10 +24,7 @@ export default function SignUpPage() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Signup failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Signup failed");
 
       setSuccess(true);
     } catch (err) {
@@ -39,14 +36,20 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
-        <div className="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full text-center border border-gray-700">
-          <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-green-400 mb-4">Check Your Email!</h2>
-          <p className="text-gray-300 mb-6">
-            We've sent a verification link to <strong>{form.email}</strong>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 sm:px-6">
+        <div className="bg-gray-800/90 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md text-center border border-gray-700 transition-transform hover:scale-[1.01]">
+          <div className="text-5xl sm:text-6xl mb-4">✅</div>
+          <h2 className="text-2xl font-bold text-green-400 mb-4">
+            Check Your Email!
+          </h2>
+          <p className="text-gray-300 mb-6 text-sm sm:text-base">
+            We&apos;ve sent a verification link to{" "}
+            <strong className="text-gray-100 break-words">{form.email}</strong>
           </p>
-          <Link href="/signin" className="text-blue-400 hover:underline">
+          <Link
+            href="/signin"
+            className="inline-block text-blue-400 hover:text-blue-300 font-medium underline-offset-2 hover:underline"
+          >
             Go to Sign In
           </Link>
         </div>
@@ -55,9 +58,9 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
-      <div className="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-md w-full border border-gray-700">
-        <h1 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4 sm:px-6">
+      <div className="bg-gray-800/90 backdrop-blur-md p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700 transition-transform hover:scale-[1.01]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           Admin Sign Up
         </h1>
 
@@ -69,7 +72,7 @@ export default function SignUpPage() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               required
-              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
           </div>
 
@@ -80,7 +83,7 @@ export default function SignUpPage() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               required
-              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
           </div>
 
@@ -92,7 +95,7 @@ export default function SignUpPage() {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
               minLength={6}
-              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
           </div>
 
@@ -105,7 +108,7 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition disabled:opacity-50"
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition disabled:opacity-50"
           >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
@@ -120,4 +123,6 @@ export default function SignUpPage() {
       </div>
     </div>
   );
-}
+};
+
+export default SignUpPage;

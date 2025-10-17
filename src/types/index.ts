@@ -12,6 +12,7 @@ export interface Student {
   email?: string | null;
   gpa: number;
   department?: Department | null;
+  profilePicture?: string;
 }
 
 export interface StudentInput {

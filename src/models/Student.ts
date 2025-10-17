@@ -7,6 +7,7 @@ export interface IStudent extends Document {
   email?: string;
   gpa: number;
   department?: mongoose.Types.ObjectId;
+  profilePicture?: string; // Base64 encoded image
 }
 
 const StudentSchema: Schema<IStudent> = new Schema({
@@ -41,10 +42,19 @@ const StudentSchema: Schema<IStudent> = new Schema({
   department: { 
     type: Schema.Types.ObjectId, 
     ref: "Department",
+    index: true, // Add index for faster queries
+  },
+  profilePicture: {
+    type: String, // Base64 encoded image string
+    required: false,
   },
 }, {
   timestamps: true,
 });
+
+// Add compound indexes for common queries
+StudentSchema.index({ firstName: 1, lastName: 1 });
+StudentSchema.index({ department: 1, gpa: -1 });
 
 export const Student: Model<IStudent> =
   mongoose.models.Student || mongoose.model<IStudent>("Student", StudentSchema);

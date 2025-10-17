@@ -1,29 +1,34 @@
 import { ApolloServer } from "@apollo/server";
 import { startServerAndCreateNextHandler } from "@as-integrations/next";
+import { NextRequest } from "next/server";
+
 import { typeDefs } from "@/graphql/typeDefs";
 import { resolvers } from "@/graphql/resolvers";
-import dbConnect from "@/lib/mongoose";
-import { NextRequest, NextResponse } from "next/server";
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  introspection: true, 
 });
 
 const handler = startServerAndCreateNextHandler(server, {
-  context: async (req: NextRequest) => {
-    await dbConnect();
-    return { 
-      req,
-      user: null,
-    };
-  },
+  context: async (req) => ({ req }),
 });
 
 export async function GET(request: NextRequest) {
-  return handler(request);
+  try {
+    return await handler(request);
+  } catch (error) {
+    console.error("GraphQL GET Error:", error);
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {
-  return handler(request);
+  try {
+    return await handler(request);
+  } catch (error) {
+    console.error("GraphQL POST Error:", error);
+    throw error;
+  }
 }

@@ -7,6 +7,7 @@ import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { Department } from "@/types";
 import { motion } from "framer-motion";
 import { SunIcon, MoonIcon } from "@heroicons/react/24/solid";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const GET_DEPARTMENTS = gql`
   query Departments {
@@ -24,6 +25,7 @@ const ADD_STUDENT = gql`
       firstName
       lastName
       gpa
+      profilePicture
       department {
         id
         name
@@ -39,6 +41,7 @@ interface FormState {
   email: string;
   gpa: string;
   departmentId: string;
+  profilePicture: string | null;
 }
 
 const AddStudentPage = () => {
@@ -50,6 +53,7 @@ const AddStudentPage = () => {
     email: "",
     gpa: "",
     departmentId: "",
+    profilePicture: null,
   });
   const [error, setError] = useState<string>("");
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -84,6 +88,10 @@ const AddStudentPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (base64: string | null) => {
+    setForm({ ...form, profilePicture: base64 });
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
@@ -110,6 +118,7 @@ const AddStudentPage = () => {
             email: form.email || undefined,
             gpa: gpaNum,
             departmentId: form.departmentId,
+            profilePicture: form.profilePicture || undefined,
           },
         },
       });
@@ -120,7 +129,7 @@ const AddStudentPage = () => {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-6 transition-colors duration-500 ${
+      className={`min-h-screen flex items-center justify-center p-4 sm:p-6 transition-colors duration-500 ${
         theme === "dark"
           ? "bg-gradient-to-br from-slate-950 via-gray-900 to-slate-950 text-gray-100"
           : "bg-gray-50 text-gray-800"
@@ -130,16 +139,16 @@ const AddStudentPage = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className={`w-full max-w-2xl rounded-2xl shadow-xl p-8 border backdrop-blur-md ${
+        className={`w-full max-w-2xl rounded-2xl shadow-xl p-6 sm:p-8 border backdrop-blur-md ${
           theme === "dark"
             ? "bg-gray-900/70 border-gray-800"
             : "bg-white/80 border-gray-200"
         }`}
       >
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-6 sm:mb-8 flex-wrap gap-4">
           <h1
-            className={`text-3xl font-bold bg-clip-text text-transparent ${
+            className={`text-2xl sm:text-3xl font-bold bg-clip-text text-transparent ${
               theme === "dark"
                 ? "bg-gradient-to-r from-emerald-400 to-blue-500"
                 : "bg-gradient-to-r from-emerald-600 to-blue-700"
@@ -162,8 +171,17 @@ const AddStudentPage = () => {
         </div>
 
         {/* FORM */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+          {/* Profile Picture Upload */}
+          <ImageUpload
+            currentImage={form.profilePicture}
+            firstName={form.firstName}
+            lastName={form.lastName}
+            onImageChange={handleImageChange}
+            theme={theme}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <InputField
               label="First Name"
               name="firstName"
@@ -261,7 +279,7 @@ const AddStudentPage = () => {
             </motion.div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => router.back()}

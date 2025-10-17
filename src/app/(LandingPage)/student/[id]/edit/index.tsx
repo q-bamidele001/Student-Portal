@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import { Department, Student } from "@/types";
+import { ImageUpload } from "@/components/ImageUpload";
 
 const STUDENT_QUERY = gql`
   query GetStudent($id: ID!) {
@@ -16,6 +17,7 @@ const STUDENT_QUERY = gql`
       matricNo
       email
       gpa
+      profilePicture
       department {
         id
         name
@@ -31,6 +33,7 @@ const UPDATE_STUDENT = gql`
       firstName
       lastName
       gpa
+      profilePicture
       department {
         name
       }
@@ -54,6 +57,7 @@ interface FormState {
   email: string;
   gpa: string;
   departmentId: string;
+  profilePicture: string | null;
 }
 
 const EditStudentPage = () => {
@@ -71,6 +75,7 @@ const EditStudentPage = () => {
     email: "",
     gpa: "",
     departmentId: "",
+    profilePicture: null,
   });
 
   useEffect(() => {
@@ -82,6 +87,7 @@ const EditStudentPage = () => {
         email: data.student.email || "",
         gpa: data.student.gpa.toString(),
         departmentId: data.student.department?.id || "",
+        profilePicture: data.student.profilePicture || null,
       });
     }
   }, [data]);
@@ -94,6 +100,10 @@ const EditStudentPage = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setCustomError("");
+  };
+
+  const handleImageChange = (base64: string | null) => {
+    setForm({ ...form, profilePicture: base64 });
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
@@ -120,110 +130,54 @@ const EditStudentPage = () => {
           email: form.email || undefined,
           gpa: gpaNum,
           departmentId: form.departmentId,
+          profilePicture: form.profilePicture || undefined,
         },
       },
     });
   };
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-400"></div>
       </div>
     );
-  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-2xl bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-gray-700"
+        className="w-full max-w-2xl bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 border border-gray-700"
       >
-        <h1 className="text-center text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+        <h1 className="text-center text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
           ✏️ Edit Student
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+          {/* Profile Picture Upload */}
+          <ImageUpload
+            currentImage={form.profilePicture}
+            firstName={form.firstName}
+            lastName={form.lastName}
+            onImageChange={handleImageChange}
+            theme="dark"
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                First Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                name="firstName"
-                type="text"
-                placeholder="First Name"
-                value={form.firstName}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Last Name <span className="text-red-400">*</span>
-              </label>
-              <input
-                name="lastName"
-                type="text"
-                placeholder="Last Name"
-                value={form.lastName}
-                onChange={handleChange}
-                required
-                className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-              />
-            </div>
+            <InputField label="First Name" name="firstName" value={form.firstName} onChange={handleChange} required />
+            <InputField label="Last Name" name="lastName" value={form.lastName} onChange={handleChange} required />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Matric Number</label>
-            <input
-              name="matricNo"
-              type="text"
-              placeholder="Matric Number"
-              value={form.matricNo}
-              onChange={handleChange}
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              GPA (0-5) <span className="text-red-400">*</span>
-            </label>
-            <input
-              name="gpa"
-              type="number"
-              step="0.01"
-              min="0"
-              max="5"
-              placeholder="GPA"
-              value={form.gpa}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
-            />
-          </div>
+          <InputField label="Matric Number" name="matricNo" value={form.matricNo} onChange={handleChange} />
+          <InputField label="Email" name="email" value={form.email} onChange={handleChange} type="email" />
+          <InputField label="GPA (0-5)" name="gpa" value={form.gpa} onChange={handleChange} type="number" min="0" max="5" step="0.01" required />
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -234,7 +188,7 @@ const EditStudentPage = () => {
               value={form.departmentId}
               onChange={handleChange}
               required
-              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-200"
+              className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
             >
               <option value="">Select Department</option>
               {depData?.departments.map((dept) => (
@@ -255,18 +209,18 @@ const EditStudentPage = () => {
             </motion.div>
           )}
 
-          <div className="flex justify-center gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 pt-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-100 transition-all duration-200 hover:scale-105 font-medium"
+              className="flex-1 px-6 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-100 transition-all duration-200 hover:scale-105 font-medium"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
+              className="flex-1 px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
             >
               {saving ? "Updating..." : "Update"}
             </button>
@@ -276,5 +230,25 @@ const EditStudentPage = () => {
     </motion.div>
   );
 };
+
+// REUSABLE INPUT FIELD
+const InputField = ({ label, name, value, onChange, type = "text", required = false, min, max, step }: any) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-300 mb-2">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <input
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      min={min}
+      max={max}
+      step={step}
+      required={required}
+      className="w-full border border-gray-700 rounded-lg px-4 py-3 bg-gray-900 text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
+    />
+  </div>
+);
 
 export default EditStudentPage;

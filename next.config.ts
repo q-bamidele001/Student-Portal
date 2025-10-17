@@ -8,7 +8,13 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
- 
+  // Suppress certain errors in development
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.devtool = 'cheap-module-source-map';
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

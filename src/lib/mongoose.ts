@@ -1,38 +1,44 @@
-import mongoose, { Connection } from "mongoose";
+import mongoose from "mongoose";
+
+const MONGODB_URI = process.env.MONGODB_URI!;
+
+if (!MONGODB_URI) {
+  throw new Error("Please define the MONGODB_URI environment variable");
+}
 
 interface MongooseCache {
-  conn: Connection | null;
-  promise: Promise<Connection> | null;
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
 declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
 if (!global.mongoose) {
   global.mongoose = cached;
 }
 
-const dbConnect = async (): Promise<Connection> => {
-  const MONGODB_URI = process.env.MONGODB_URI;
-
-  if (!MONGODB_URI) {
-    throw new Error("Please add your MongoDB URI to .env.local");
-  }
-
+async function dbConnect(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;
   }
 
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
+      bufferCommands: false, 
+      maxPoolSize: 10, 
+      minPoolSize: 2,
+      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 10000,
+      family: 4, 
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose.connection;
+      console.log("✅ MongoDB Connected");
+      return mongoose;
     });
   }
 
@@ -40,10 +46,11 @@ const dbConnect = async (): Promise<Connection> => {
     cached.conn = await cached.promise;
   } catch (e) {
     cached.promise = null;
+    console.error("❌ MongoDB Connection Error:", e);
     throw e;
   }
 
   return cached.conn;
-};
+}
 
 export default dbConnect;

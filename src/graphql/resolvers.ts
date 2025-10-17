@@ -1,183 +1,123 @@
-import { Student, IStudent } from "@/models/Student";
-import { Department, IDepartment } from "@/models/Department";
 import dbConnect from "@/lib/mongoose";
-import mongoose from "mongoose";
-
-interface StudentInput {
-  firstName: string;
-  lastName: string;
-  matricNo?: string;
-  email?: string;
-  gpa: number;
-  departmentId?: string;
-}
-
-interface DepartmentInput {
-  name: string;
-  code?: string;
-}
+import { Department } from "@/models/Department";
+import { Student } from "@/models/Student";
 
 export const resolvers = {
   Query: {
-    students: async (): Promise<IStudent[]> => {
+    departments: async () => {
       await dbConnect();
-      return Student.find().populate("department");
+      return await Department.find({});
     },
-
-    student: async (_: unknown, { id }: { id: string }): Promise<IStudent | null> => {
+    department: async (_: unknown, { id }: { id: string }) => {
       await dbConnect();
-      return Student.findById(id).populate("department");
+      return await Department.findById(id);
     },
-
-    departments: async (): Promise<IDepartment[]> => {
+    students: async () => {
       await dbConnect();
-      return Department.find();
+      return await Student.find({}).populate("department");
     },
-
-    department: async (_: unknown, { id }: { id: string }): Promise<IDepartment | null> => {
+    student: async (_: unknown, { id }: { id: string }) => {
       await dbConnect();
-      return Department.findById(id);
+      return await Student.findById(id).populate("department");
     },
   },
 
   Mutation: {
-    addStudent: async (_: unknown, { input }: { input: StudentInput }): Promise<IStudent> => {
+    addDepartment: async (_: unknown, { input }: { input: { name: string; code?: string } }) => {
       await dbConnect();
-
-      if (input.matricNo) {
-        const existing = await Student.findOne({ matricNo: input.matricNo });
-        if (existing) {
-          throw new Error(`A student with matric number "${input.matricNo}" already exists.`);
-        }
+      const department = new Department(input);
+      return await department.save();
+    },
+    updateDepartment: async (
+      _: unknown,
+      { id, input }: { id: string; input: { name: string; code?: string } }
+    ) => {
+      await dbConnect();
+      return await Department.findByIdAndUpdate(id, input, { new: true });
+    },
+    deleteDepartment: async (_: unknown, { id }: { id: string }) => {
+      await dbConnect();
+      await Department.findByIdAndDelete(id);
+      return true;
+    },
+    addStudent: async (
+      _: unknown,
+      {
+        input,
+      }: {
+        input: {
+          firstName: string;
+          lastName: string;
+          matricNo?: string;
+          email?: string;
+          gpa: number;
+          departmentId: string;
+          profilePicture?: string;
+        };
       }
-
-      let departmentId: mongoose.Types.ObjectId | undefined;
-      
-      if (input.departmentId) {
-        if (!mongoose.Types.ObjectId.isValid(input.departmentId)) {
-          throw new Error("Invalid department ID");
-        }
-
-        const departmentDoc = await Department.findById(input.departmentId);
-        if (!departmentDoc) {
-          throw new Error("Department not found");
-        }
-
-        departmentId = new mongoose.Types.ObjectId(input.departmentId);
-      }
-
-      const student = await Student.create({
+    ) => {
+      await dbConnect();
+      const student = new Student({
         firstName: input.firstName,
         lastName: input.lastName,
-        matricNo: input.matricNo || undefined,
-        email: input.email || undefined,
+        matricNo: input.matricNo,
+        email: input.email,
         gpa: input.gpa,
-        department: departmentId,
+        department: input.departmentId,
+        profilePicture: input.profilePicture,
       });
-
-      return student.populate("department");
+      await student.save();
+      return await student.populate("department");
     },
-
-    updateStudent: async (_: unknown, { id, input }: { id: string; input: StudentInput }): Promise<IStudent | null> => {
-      await dbConnect();
-
-      if (input.matricNo) {
-        const existing = await Student.findOne({
-          matricNo: input.matricNo,
-          _id: { $ne: id },
-        });
-        if (existing) {
-          throw new Error(`A student with matric number "${input.matricNo}" already exists.`);
-        }
-      }
-
-      let departmentId: mongoose.Types.ObjectId | undefined;
-      
-      if (input.departmentId) {
-        if (!mongoose.Types.ObjectId.isValid(input.departmentId)) {
-          throw new Error("Invalid department ID");
-        }
-
-        const departmentDoc = await Department.findById(input.departmentId);
-        if (!departmentDoc) {
-          throw new Error("Department not found");
-        }
-
-        departmentId = new mongoose.Types.ObjectId(input.departmentId);
-      }
-
-      const student = await Student.findByIdAndUpdate(
+    updateStudent: async (
+      _: unknown,
+      {
         id,
-        {
-          firstName: input.firstName,
-          lastName: input.lastName,
-          matricNo: input.matricNo || undefined,
-          email: input.email || undefined,
-          gpa: input.gpa,
-          department: departmentId,
-        },
-        { new: true }
-      );
-
-      return student?.populate("department") || null;
-    },
-
-    deleteStudent: async (_: unknown, { id }: { id: string }): Promise<boolean> => {
+        input,
+      }: {
+        id: string;
+        input: {
+          firstName: string;
+          lastName: string;
+          matricNo?: string;
+          email?: string;
+          gpa: number;
+          departmentId: string;
+          profilePicture?: string;
+        };
+      }
+    ) => {
       await dbConnect();
-      const result = await Student.findByIdAndDelete(id);
-      return !!result;
-    },
+      const updateData: any = {
+        firstName: input.firstName,
+        lastName: input.lastName,
+        matricNo: input.matricNo,
+        email: input.email,
+        gpa: input.gpa,
+        department: input.departmentId,
+      };
 
-    addDepartment: async (_: unknown, { input }: { input: DepartmentInput }): Promise<IDepartment> => {
-      await dbConnect();
-      
-      const existing = await Department.findOne({ name: input.name });
-      if (existing) {
-        throw new Error(`Department "${input.name}" already exists.`);
+      // Only update profilePicture if it's provided
+      if (input.profilePicture !== undefined) {
+        updateData.profilePicture = input.profilePicture;
       }
 
-      const department = await Department.create({
-        name: input.name,
-        code: input.code || undefined,
-      });
-
-      return department;
+      const student = await Student.findByIdAndUpdate(id, updateData, {
+        new: true,
+      }).populate("department");
+      return student;
     },
-
-    updateDepartment: async (_: unknown, { id, input }: { id: string; input: DepartmentInput }): Promise<IDepartment> => {
+    deleteStudent: async (_: unknown, { id }: { id: string }) => {
       await dbConnect();
-      
-      const existing = await Department.findOne({
-        name: input.name,
-        _id: { $ne: id },
-      });
-      if (existing) {
-        throw new Error(`Department "${input.name}" already exists.`);
-      }
-
-      const department = await Department.findByIdAndUpdate(
-        id,
-        {
-          name: input.name,
-          code: input.code || undefined,
-        },
-        { new: true }
-      );
-
-      if (!department) {
-        throw new Error("Department not found");
-      }
-
-      return department;
+      await Student.findByIdAndDelete(id);
+      return true;
     },
+  },
 
-    deleteDepartment: async (_: unknown, { id }: { id: string }): Promise<boolean> => {
+  Department: {
+    students: async (parent: { _id: string }) => {
       await dbConnect();
-
-      await Student.updateMany({ department: id }, { $unset: { department: "" } });
-
-      const result = await Department.findByIdAndDelete(id);
-      return !!result;
+      return await Student.find({ department: parent._id });
     },
   },
 };

@@ -15,6 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Department, Student } from "@/types";
 import { useSession, signOut } from "next-auth/react";
+import { Avatar } from "@/components/Avatar";
 
 const STUDENTS_QUERY = gql`
   query Students {
@@ -25,6 +26,7 @@ const STUDENTS_QUERY = gql`
       email
       matricNo
       gpa
+      profilePicture
       department {
         id
         name
@@ -212,7 +214,7 @@ const DashboardPage = () => {
                 : "text-emerald-700"
             }`}
           >
-            Student Management Dashboard
+            Student Record System
           </h2>
 
           <div className="flex gap-3 flex-wrap justify-center">
@@ -335,53 +337,62 @@ const DashboardPage = () => {
             <p className="text-sm opacity-60 mt-1">Try adjusting your filters or search.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            <AnimatePresence>
-              {filteredStudents.map((student) => (
-                <motion.div
-                  key={student.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.3 }}
-                  className={`rounded-2xl p-6 shadow-md hover:shadow-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300 border ${
-                    theme === "dark"
-                      ? "bg-gray-900/70 border-gray-800"
-                      : "bg-white border-gray-200"
-                  }`}
-                >
-                  <h3 className="text-xl font-semibold mb-3">
-                    {student.firstName} {student.lastName}
-                  </h3>
-                  <div className="space-y-2 text-sm mb-4 opacity-90">
-                    <p>
-                      <span className="font-medium">Matric No:</span> {student.matricNo || "—"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Email:</span> {student.email || "—"}
-                    </p>
-                    <p>
-                      <span className="font-medium">Department:</span> {student.department?.name || "—"}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className={`${getGpaColor(student.gpa)} px-3 py-1.5 rounded-full text-sm font-semibold`}>
-                      GPA: {student.gpa.toFixed(2)}
-                    </span>
-                    <Link
-                      href={`/student/${student.id}`}
-                      className={`font-medium text-sm flex items-center gap-1 transition-colors ${
-                        theme === "dark"
-                          ? "text-emerald-400 hover:text-emerald-300"
-                          : "text-emerald-600 hover:text-emerald-700"
-                      }`}
-                    >
-                      View ➜
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
+          <div className="overflow-x-auto">
+            <div className="flex gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-8">
+              <AnimatePresence>
+                {filteredStudents.map((student) => (
+                  <motion.div
+                    key={student.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.3 }}
+                    className={`min-w-[260px] sm:min-w-0 rounded-2xl p-5 sm:p-6 shadow-md hover:shadow-emerald-500/20 hover:border-emerald-500/50 transition-all duration-300 border ${
+                      theme === "dark"
+                        ? "bg-gray-900/70 border-gray-800"
+                        : "bg-white border-gray-200"
+                    }`}
+                  >
+                    {/* Redesigned Card Layout */}
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                      <Avatar
+                        src={student.profilePicture}
+                        firstName={student.firstName}
+                        lastName={student.lastName}
+                        size="lg"
+                        theme={theme}
+                      />
+
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold">{student.firstName} {student.lastName}</h3>
+                        <div className="mt-1 text-sm sm:text-base space-y-1 opacity-90">
+                          <p><span className="font-medium">Matric No:</span> {student.matricNo || "—"}</p>
+                          <p><span className="font-medium">Email:</span> {student.email || "—"}</p>
+                          <p><span className="font-medium">Department:</span> {student.department?.name || "—"}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Compact bottom row for GPA & View */}
+                    <div className="flex justify-between items-center mt-4 flex-wrap gap-2">
+                      <span className={`${getGpaColor(student.gpa)} px-3 py-1.5 rounded-full text-sm font-semibold`}>
+                        GPA: {student.gpa.toFixed(2)}
+                      </span>
+                      <Link
+                        href={`/student/${student.id}`}
+                        className={`font-medium text-sm flex items-center gap-1 transition-colors ${
+                          theme === "dark"
+                            ? "text-emerald-400 hover:text-emerald-300"
+                            : "text-emerald-600 hover:text-emerald-700"
+                        }`}
+                      >
+                        View ➜
+                      </Link>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
           </div>
         )}
       </main>

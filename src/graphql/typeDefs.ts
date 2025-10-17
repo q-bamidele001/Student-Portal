@@ -5,6 +5,7 @@ export const typeDefs = gql`
     id: ID!
     name: String!
     code: String
+    students: [Student]
   }
 
   type Student {
@@ -15,6 +16,7 @@ export const typeDefs = gql`
     email: String
     gpa: Float!
     department: Department
+    profilePicture: String
   }
 
   input StudentInput {
@@ -24,6 +26,7 @@ export const typeDefs = gql`
     email: String
     gpa: Float!
     departmentId: ID
+    profilePicture: String
   }
 
   input DepartmentInput {
