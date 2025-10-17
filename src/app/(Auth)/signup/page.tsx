@@ -78,6 +78,7 @@ const SignUpPage = () => {
 
           <div>
             <input
+              id="email"
               type="email"
               placeholder="Email"
               value={form.email}

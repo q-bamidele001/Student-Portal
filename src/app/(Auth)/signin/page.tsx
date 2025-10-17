@@ -58,6 +58,7 @@ const SignInForm = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
+              id="email"
               type="email"
               placeholder="Email"
               value={form.email}
